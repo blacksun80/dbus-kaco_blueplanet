@@ -5,7 +5,11 @@ Victron Venus integration for Kaco blueplanet 3.0 TL3 - 10 TL3 Inverters
 
 This service is meant to be run on a raspberry Pi with Venus OS from Victron or a for example a Cerbo GX device.
 
-The Python script cyclically reads data from the Kaco blueplanet Inverter via Sunspec Modbus and publishes information on the dbus, using the services com.victronenergy.grid, com.victronenergy.pvinverter.pv0, com.victronenergy.temperature, com.victronenergy.digitalinput. This makes the Venus OS work as if you had a physical Victron Grid Meter installed and gives all information about PV Intervter load, temperature and if the inverter is in limit mode.
+The Python script cyclically reads data from the Kaco blueplanet Inverter via Sunspec Modbus and publishes information on the dbus.
+
+By default, only two services are actually registered: com.victronenergy.pvinverter.pv0 (PV inverter power/energy) and com.victronenergy.temperature (inverter cabinet temperature). The code also contains a com.victronenergy.grid service (would make Venus OS work as if a physical Victron Grid Meter were installed) and a com.victronenergy.digitalinput service (limit-mode indicator), but both are commented out in `new_service()` near the bottom of the script and are not created unless you uncomment them yourself.
+
+**Note:** if all you need is the plain PV inverter reading (AC power/voltage/current, energy, status/error code) and your inverter's own SunSpec Modbus TCP interface is reachable directly (not just through a gateway that remaps the register addresses), check first whether Venus OS's built-in generic SunSpec PV inverter support (the same driver used for Fronius, `dbus-fronius`) already detects your inverter under *Settings → PV inverters* before setting up this script — it may work out of the box and needs no maintenance across Venus OS updates. It has been confirmed to work directly with a Kaco blueplanet 8.6 TL3 (firmware V5.53) reachable on its own IP; it only requires that a single Modbus TCP client can connect at a time, so a gateway/proxy that already holds the inverter's one allowed connection (as used in the setup below) will block it.
 
 ![Dashboard shows Energy flow](images/dashboard.png?raw=true "Dashboard")
 ![Menu shows Entries of the Inverter](images/menu.png?raw=true "Menu")
