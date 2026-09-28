@@ -8,8 +8,6 @@ try:
 except:
   from gi.repository import GLib as gobject # Python 3.x
 
-# from gobject import idle_add
-
 import dbus
 import dbus.service
 import inspect
@@ -20,7 +18,6 @@ import logging
 import sys
 import os
 import requests # for http GET
-# from pyModbusTCP.client import ModbusClient
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 
 import time
@@ -111,35 +108,6 @@ def dbusconnection():
 
 def _update():
     try:
-        # regs = modbusClient.read_holding_registers(40190, 70, unit=UNIT)
-
-        # if regs.isError():
-            # log.error('regs.isError: '+regs)
-            # sys.exit()                                                                             
-        # else:
-           # sf = _get_scale_factor(regs.registers[4])
-           # #dbusservice['grid']['/Ac/L1/Current'] = round(_get_signed_short(regs.registers[1]) * sf, 2)
-           # #dbusservice['grid']['/Ac/L2/Current'] = round(_get_signed_short(regs.registers[2]) * sf, 2)
-           # #dbusservice['grid']['/Ac/L3/Current'] = round(_get_signed_short(regs.registers[3]) * sf, 2)
-           # sf = _get_scale_factor(regs.registers[13])
-           # dbusservice['grid']['/Ac/L1/Voltage'] = round(_get_signed_short(regs.registers[6]) * sf, 2)
-           # dbusservice['grid']['/Ac/L2/Voltage'] = round(_get_signed_short(regs.registers[7]) * sf, 2)
-           # dbusservice['grid']['/Ac/L3/Voltage'] = round(_get_signed_short(regs.registers[8]) * sf, 2)
-           # sf = _get_scale_factor(regs.registers[20])
-           # dbusservice['grid']['/Ac/Power'] = round(_get_signed_short(regs.registers[16]) * sf * -1, 2)
-           # dbusservice['grid']['/Ac/L1/Power'] = round(_get_signed_short(regs.registers[17]) * sf * -1, 2)
-           # dbusservice['grid']['/Ac/L2/Power'] = round(_get_signed_short(regs.registers[18]) * sf * -1, 2)
-           # dbusservice['grid']['/Ac/L3/Power'] = round(_get_signed_short(regs.registers[19]) * sf * -1, 2)
-           # sf = _get_scale_factor(regs.registers[52])
-           # dbusservice['grid']['/Ac/Energy/Reverse'] = float((regs.registers[36] << 16) + regs.registers[37]) * sf / 1000
-           # dbusservice['grid']['/Ac/L1/Energy/Reverse'] = float((regs.registers[38] << 16) + regs.registers[39]) * sf / 1000
-           # dbusservice['grid']['/Ac/L2/Energy/Reverse'] = float((regs.registers[40] << 16) + regs.registers[41]) * sf / 1000
-           # dbusservice['grid']['/Ac/L3/Energy/Reverse'] = float((regs.registers[42] << 16) + regs.registers[43]) * sf / 1000
-           # dbusservice['grid']['/Ac/Energy/Forward'] = float((regs.registers[44] << 16) + regs.registers[45]) * sf / 1000
-           # dbusservice['grid']['/Ac/L1/Energy/Forward'] = float((regs.registers[46] << 16) + regs.registers[47]) * sf / 1000
-           # dbusservice['grid']['/Ac/L2/Energy/Forward'] = float((regs.registers[48] << 16) + regs.registers[49]) * sf / 1000
-           # dbusservice['grid']['/Ac/L3/Energy/Forward'] = float((regs.registers[50] << 16) + regs.registers[51]) * sf / 1000
-
         # read registers, store result in regs list
         regs = modbusClient.read_holding_registers(40072, 50, unit=UNIT)
         if regs.isError():
@@ -172,13 +140,6 @@ def _update():
 
            sf = _get_scale_factor(regs.registers[35])
            dbusservice['adc-temp0']['/Temperature'] = round(regs.registers[31] * sf, 2)
-
-           # if ((regs.registers[36] == 5) & (acpower > 100)):
-               # dbusservice['digitalinput0']['/State'] = 3
-               # dbusservice['digitalinput0']['/Alarm'] = 2
-           # else:
-               # dbusservice['digitalinput0']['/State'] = 2
-               # dbusservice['digitalinput0']['/Alarm'] = 0
     except Exception as e:
         log.error('exception in _update.')
         log.exception(str(e))
@@ -328,10 +289,8 @@ base = 'com.victronenergy'
 # service defined by (base*, type*, id*, instance):
 # * items are include in service name
 # Create all the dbus-services we want
-#dbusservice['grid']           = new_service(base, 'grid',           'grid',              0, 0)
 dbusservice['pvinverter.pv0'] = new_service(base, 'pvinverter.pv0', 'pvinverter',        0, 20)
 dbusservice['adc-temp0']      = new_service(base, 'temperature',    'temp_pvinverter',   0, 26)
-#dbusservice['digitalinput0']  = new_service(base, 'digitalinput',    'limit_pvinverter', 0, 10)
 
 # Everything done so just set a time to run an update function to update the data values every second.
 gobject.timeout_add(1000, _update)
