@@ -1,6 +1,15 @@
 # dbus-kaco_blueplanet Service
 Victron Venus integration for Kaco blueplanet 3.0 TL3 - 10 TL3 Inverters
 
+## You probably don't need this script anymore
+
+If your Kaco blueplanet has its own Ethernet/Modbus-TCP interface (not just RS485), Venus OS's **built-in** SunSpec PV inverter support (the same driver used for Fronius, `dbus-fronius`) can detect and read it natively — confirmed working with a blueplanet 8.6 TL3 (firmware V5.53). No script, no service, nothing on `/data` to survive a Venus OS update.
+
+- Go to VRM Remote Console (or the GX touch display, if it supports the new UI) → *Settings → Integrations → PV inverters*, turn on automatic scanning, and see if it's found automatically.
+- If your inverter/gateway only answers on a non-default port or a different Modbus unit ID than the standard 502/126 (e.g. because it sits behind a Modbus proxy, like when multiplexing the single connection the inverter allows to several clients), add it under *PV inverters → Wechselrichter → Modbus port and unit ID settings* — format `port:unitId`, e.g. `9010:126`. This setting is stored in Venus OS's own settings database, so it also survives updates and even a full reinstall (unlike anything you'd hack into `/data` yourself).
+
+This script is still useful if: your inverter/gateway only exposes a non-standard, non-SunSpec register layout (e.g. a PLC re-exporting a remapped subset of registers, rather than proxying the real SunSpec server), or you specifically want the `com.victronenergy.grid` / `com.victronenergy.temperature` / `com.victronenergy.digitalinput` extras (see below — off by default even in this repo).
+
 ### Purpose
 
 This service is meant to be run on a raspberry Pi with Venus OS from Victron or a for example a Cerbo GX device.
@@ -8,8 +17,6 @@ This service is meant to be run on a raspberry Pi with Venus OS from Victron or 
 The Python script cyclically reads data from the Kaco blueplanet Inverter via Sunspec Modbus and publishes information on the dbus.
 
 By default, only two services are actually registered: com.victronenergy.pvinverter.pv0 (PV inverter power/energy) and com.victronenergy.temperature (inverter cabinet temperature). The code also contains a com.victronenergy.grid service (would make Venus OS work as if a physical Victron Grid Meter were installed) and a com.victronenergy.digitalinput service (limit-mode indicator), but both are commented out in `new_service()` near the bottom of the script and are not created unless you uncomment them yourself.
-
-**Note:** if all you need is the plain PV inverter reading (AC power/voltage/current, energy, status/error code) and your inverter's own SunSpec Modbus TCP interface is reachable directly (not just through a gateway that remaps the register addresses), check first whether Venus OS's built-in generic SunSpec PV inverter support (the same driver used for Fronius, `dbus-fronius`) already detects your inverter under *Settings → PV inverters* before setting up this script — it may work out of the box and needs no maintenance across Venus OS updates. It has been confirmed to work directly with a Kaco blueplanet 8.6 TL3 (firmware V5.53) reachable on its own IP; it only requires that a single Modbus TCP client can connect at a time, so a gateway/proxy that already holds the inverter's one allowed connection (as used in the setup below) will block it.
 
 ![Dashboard shows Energy flow](images/dashboard.png?raw=true "Dashboard")
 ![Menu shows Entries of the Inverter](images/menu.png?raw=true "Menu")
